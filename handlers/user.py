@@ -494,3 +494,81 @@ async def _show_mybooking(uid: int, message: Message):
         parse_mode="HTML",
         reply_markup=cancel_booking_kb(booking['id'], uid)
     )
+
+
+# ============================================================
+# Обработчик данных из мини-аппа (WebApp)
+# ============================================================
+
+from aiogram.types import Message as AiogramMessage
+import json
+
+@router.message(F.web_app_data)
+async def handle_web_app_data(message: AiogramMessage, bot: Bot):
+    uid = message.from_user.id
+    try:
+        data = json.loads(message.web_app_data.data)
+    except Exception:
+        await message.answer("❌ Ошибка данных из мини-аппа.")
+        return
+
+    action = data.get("action")
+
+    if action == "book":
+        day_date = data.get("date")
+        time_slot = data.get("time")
+        name = data.get("name", "").strip()
+        phone = data.get("phone", "").strip()
+        username = message.from_user.username
+
+        if not all([day_date, time_slot, name, phone]):
+            await message.answer(t(uid, "slot_taken"), parse_mode="HTML",
+                                 reply_markup=back_to_menu_kb(uid))
+            return
+
+        # Проверяем что слот свободен
+        free_slots = await db.get_free_slots(day_date)
+        if time_slot not in free_slots:
+            await message.answer(t(uid, "slot_taken"), parse_mode="HTML",
+                                 reply_markup=back_to_menu_kb(uid))
+            return
+
+        # Проверяем нет ли уже записи
+        existing = await db.get_user_booking(uid)
+        if existing:
+            await message.answer(
+                t(uid, "has_booking", date=existing['date'],
+                  time=existing['time'], name=existing['name']),
+                parse_mode="HTML",
+                reply_markup=cancel_booking_kb(existing['id'], uid)
+            )
+            return
+
+        # Создаём запись
+        booking_id = await db.create_booking(uid, username, name, phone, day_date, time_slot)
+        await db.book_slot(day_date, time_slot)
+        schedule_reminder(bot, booking_id, uid, day_date, time_slot)
+
+        await message.answer(
+            t(uid, "booked", date=day_date, time=time_slot, name=name, phone=phone),
+            parse_mode="HTML",
+            reply_markup=back_to_menu_kb(uid)
+        )
+
+        tg_link = f"@{username}" if username else f"ID: {uid}"
+        await bot.send_message(
+            ADMIN_ID,
+            t(ADMIN_ID, "admin_notify", name=name, phone=phone,
+              date=day_date, time=time_slot, tg=tg_link, id=booking_id),
+            parse_mode="HTML"
+        )
+
+    elif action == "check_subscription":
+        from middlewares.subscription import check_subscription
+        is_sub = await check_subscription(bot, uid)
+        if is_sub:
+            await message.answer(t(uid, "sub_ok"), parse_mode="HTML",
+                                 reply_markup=reply_menu_kb(uid))
+        else:
+            await message.answer(t(uid, "sub_not_ok"), parse_mode="HTML",
+                                 reply_markup=subscribe_kb(CHANNEL_LINK, uid))

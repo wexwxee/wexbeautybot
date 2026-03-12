@@ -240,8 +240,8 @@
   <!-- Топ-панель -->
   <div class="topbar">
     <div class="lang-toggle">
-      <button class="lang-btn active" onclick="setLang('ru')">RU</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('ru')">RU</button>
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
     </div>
     <span class="theme-icon">☀️</span>
     <button class="theme-toggle" onclick="toggleTheme()"></button>
@@ -317,8 +317,35 @@
           <input type="text" class="form-input" id="inp-name" placeholder="Ваше имя" autocomplete="name"/>
         </div>
         <div class="form-group">
-          <label class="form-label" data-i="lbl_phone">Телефон</label>
-          <input type="tel" class="form-input" id="inp-phone" placeholder="+7 999 123-45-67" autocomplete="tel"/>
+          <label class="form-label" data-i="lbl_phone">Phone</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="phone-country" onchange="updatePhonePrefix()" style="padding:13px 10px;border:1.5px solid var(--slot-border);border-radius:12px;background:var(--input-bg);color:var(--body-text);font-family:Montserrat,sans-serif;font-size:13px;min-width:110px;outline:none;cursor:pointer">
+              <option value="+45" data-flag="🇩🇰" selected>🇩🇰 +45</option>
+              <option value="+46" data-flag="🇸🇪">🇸🇪 +46</option>
+              <option value="+47" data-flag="🇳🇴">🇳🇴 +47</option>
+              <option value="+358" data-flag="🇫🇮">🇫🇮 +358</option>
+              <option value="+49" data-flag="🇩🇪">🇩🇪 +49</option>
+              <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
+              <option value="+33" data-flag="🇫🇷">🇫🇷 +33</option>
+              <option value="+31" data-flag="🇳🇱">🇳🇱 +31</option>
+              <option value="+32" data-flag="🇧🇪">🇧🇪 +32</option>
+              <option value="+41" data-flag="🇨🇭">🇨🇭 +41</option>
+              <option value="+43" data-flag="🇦🇹">🇦🇹 +43</option>
+              <option value="+48" data-flag="🇵🇱">🇵🇱 +48</option>
+              <option value="+420" data-flag="🇨🇿">🇨🇿 +420</option>
+              <option value="+36" data-flag="🇭🇺">🇭🇺 +36</option>
+              <option value="+380" data-flag="🇺🇦">🇺🇦 +380</option>
+              <option value="+7" data-flag="🇷🇺">🇷🇺 +7</option>
+              <option value="+370" data-flag="🇱🇹">🇱🇹 +370</option>
+              <option value="+371" data-flag="🇱🇻">🇱🇻 +371</option>
+              <option value="+372" data-flag="🇪🇪">🇪🇪 +372</option>
+              <option value="+39" data-flag="🇮🇹">🇮🇹 +39</option>
+              <option value="+34" data-flag="🇪🇸">🇪🇸 +34</option>
+              <option value="+351" data-flag="🇵🇹">🇵🇹 +351</option>
+              <option value="+30" data-flag="🇬🇷">🇬🇷 +30</option>
+            </select>
+            <input type="tel" class="form-input" id="inp-phone" placeholder="12 34 56 78" autocomplete="tel" style="flex:1"/>
+          </div>
         </div>
       </div>
       <button class="btn-primary" onclick="goToConfirm()" data-i="btn_continue">Продолжить →</button>
@@ -357,17 +384,17 @@
       <p style="font-size:11px;color:var(--sub-text);margin-bottom:14px" data-i="price_sub">Актуальные цены</p>
       <div class="price-item">
         <div>
-          <div class="price-name" data-i="s1">Французский маникюр</div>
-          <div class="price-name-sub" data-i="s1s">Френч • гель-лак</div>
+          <div class="price-name" data-i="s1">French manicure</div>
+          <div class="price-name-sub" data-i="s1s">French • gel polish</div>
         </div>
-        <div class="price-value">1 000 ₽</div>
+        <div class="price-value" id="price-1">350 DKK</div>
       </div>
       <div class="price-item">
         <div>
-          <div class="price-name" data-i="s2">Квадрат</div>
-          <div class="price-name-sub" data-i="s2s">Классическая форма</div>
+          <div class="price-name" data-i="s2">Square</div>
+          <div class="price-name-sub" data-i="s2s">Classic shape</div>
         </div>
-        <div class="price-value">500 ₽</div>
+        <div class="price-value" id="price-2">280 DKK</div>
       </div>
     </div>
     <p style="text-align:center;font-size:11px;color:var(--sub-text)" data-i="price_note">❀ По вопросам — пишите в бот</p>
@@ -398,6 +425,7 @@
 <script>
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
+loadSlotsFromBot();
 
 // ── Переводы ──────────────────────────────────────────────
 const T = {
@@ -423,7 +451,7 @@ const T = {
     err_phone:"Введите корректный номер",
     sub_ok:"✅ Подписка подтверждена!",
     success_body:"Мы ждём вас! ✨\nНапомним за 24 часа до визита.",
-    ph_name:"Ваше имя", ph_phone:"+7 999 123-45-67",
+    ph_name:"Ваше имя", ph_phone:"12 34 56 78",
     months:['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
     days:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],
     wd:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
@@ -450,14 +478,14 @@ const T = {
     err_phone:"Enter a valid phone number",
     sub_ok:"✅ Subscription confirmed!",
     success_body:"We look forward to seeing you! ✨\nReminder 24h before your visit.",
-    ph_name:"Your name", ph_phone:"+7 999 123-4567",
+    ph_name:"Your name", ph_phone:"12 34 56 78",
     months:['January','February','March','April','May','June','July','August','September','October','November','December'],
     days:['Mo','Tu','We','Th','Fr','Sa','Su'],
     wd:['Su','Mo','Tu','We','Th','Fr','Sa'],
   }
 };
 
-let lang = 'ru';
+let lang = 'en';
 let dark = false;
 
 // ── Тема ──────────────────────────────────────────────────
@@ -478,6 +506,7 @@ function setLang(l) {
   );
   applyT();
   renderCal();
+  updatePrices();
 }
 
 function applyT() {
@@ -508,18 +537,27 @@ const S = {
 };
 
 function makeDates() {
+  // Слоты загружаются из бота через initData
+  // Пока показываем пустой объект — заполнится после loadSlotsFromBot()
+  return {};
+}
+
+async function loadSlotsFromBot() {
+  // Запрашиваем доступные слоты через Telegram sendData
+  // Бот вернёт данные через следующее сообщение
+  // Пока используем статичные слоты на 30 дней для демо
+  // (полная интеграция требует webhook API)
   const out = {};
   const today = new Date();
   const slots = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
   for (let i = 1; i <= 30; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    if (d.getDay() !== 0) {
-      const k = d.toISOString().split('T')[0];
-      out[k] = slots.filter(() => Math.random() > 0.3);
-    }
+    const k = d.toISOString().split('T')[0];
+    out[k] = [...slots]; // все слоты свободны по умолчанию
   }
-  return out;
+  S.available = out;
+  renderCal();
 }
 
 // ── Календарь ──────────────────────────────────────────────
@@ -625,9 +663,10 @@ function goToForm() {
 function goToConfirm() {
   const t = T[lang];
   const name = document.getElementById('inp-name').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
+  const numRaw = document.getElementById('inp-phone').value.trim();
   if (name.length < 2) { toast(t.err_name); return; }
-  if (!phone.match(/^[\+]?[\d\s\-\(\)]{10,16}$/)) { toast(t.err_phone); return; }
+  if (numRaw.length < 5) { toast(t.err_phone); return; }
+  const phone = getFullPhone();
 
   const [y,m,d] = S.date.split('-');
   const dt = new Date(+y, +m-1, +d);
@@ -640,10 +679,34 @@ function goToConfirm() {
 }
 
 // ── Шаг 4: Подтверждение ──────────────────────────────────
+function getFullPhone() {
+  const prefix = document.getElementById('phone-country').value;
+  const num = document.getElementById('inp-phone').value.trim().replace(/^0+/, '');
+  return prefix + num.replace(/[\s\-]/g, '');
+}
+
+function updatePhonePrefix() {
+  // just triggers UI update
+}
+
+function updatePrices() {
+  if (lang === 'en') {
+    const p1 = document.getElementById('price-1');
+    const p2 = document.getElementById('price-2');
+    if (p1) p1.textContent = '350 DKK';
+    if (p2) p2.textContent = '280 DKK';
+  } else {
+    const p1 = document.getElementById('price-1');
+    const p2 = document.getElementById('price-2');
+    if (p1) p1.textContent = '1 000 ₽';
+    if (p2) p2.textContent = '500 ₽';
+  }
+}
+
 function submitBooking() {
   const t = T[lang];
   const name = document.getElementById('inp-name').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
+  const phone = getFullPhone();
   if (tg) tg.sendData(JSON.stringify({ action:'book', date:S.date, time:S.time, name, phone }));
 
   hide('step-confirm'); show('step-success');
@@ -695,6 +758,7 @@ function toast(msg) {
 // ── Инициализация ─────────────────────────────────────────
 applyT();
 renderCal();
+updatePrices();
 </script>
 </body>
 </html>
