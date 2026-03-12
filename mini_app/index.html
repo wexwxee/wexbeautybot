@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Wex Beauty — Запись</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #fdf6ee;
+      --blush: #f2d4c8;
+      --rose: #c9897a;
+      --deep-rose: #a05e50;
+      --mauve: #8b6b70;
+      --charcoal: #2c2018;
+      --soft-black: #1a1208;
+      --gold: #c4a35a;
+      --glass: rgba(253,246,238,0.88);
+      --card-bg: white;
+      --input-bg: white;
+      --border: rgba(242,212,200,0.8);
+      --shadow: 0 8px 40px rgba(160,94,80,0.13);
+      --nav-inactive: white;
+      --nav-inactive-text: #8b6b70;
+      --body-text: #2c2018;
+      --sub-text: #8b6b70;
+      --slot-bg: white;
+      --slot-border: #f2d4c8;
+      --price-border: rgba(242,212,200,0.6);
+    }
+    [data-theme="dark"] {
+      --cream: #1a1410;
+      --blush: #3a2820;
+      --rose: #d4907f;
+      --deep-rose: #c07060;
+      --mauve: #b09098;
+      --charcoal: #f0e8e0;
+      --soft-black: #faf4ee;
+      --gold: #d4b06a;
+      --glass: rgba(30,22,16,0.92);
+      --card-bg: #251c16;
+      --input-bg: #2e221a;
+      --border: rgba(80,50,40,0.8);
+      --shadow: 0 8px 40px rgba(0,0,0,0.4);
+      --nav-inactive: #2e221a;
+      --nav-inactive-text: #b09098;
+      --body-text: #f0e8e0;
+      --sub-text: #b09098;
+      --slot-bg: #2e221a;
+      --slot-border: #3a2820;
+      --price-border: rgba(80,50,40,0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      color: var(--body-text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 20% 10%, rgba(242,212,200,0.4) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 90%, rgba(196,163,90,0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="dark"] body::before {
+      background: radial-gradient(ellipse at 20% 10%, rgba(80,40,30,0.4) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 90%, rgba(100,70,20,0.15) 0%, transparent 50%);
+    }
+    .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; padding: 0 0 90px; }
+
+    /* Топ-панель */
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px 0;
+    }
+    .lang-toggle { display: flex; background: var(--blush); border-radius: 10px; overflow: hidden; }
+    .lang-btn {
+      padding: 5px 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sub-text);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+    .lang-btn.active { background: var(--rose); color: white; border-radius: 8px; }
+    .theme-icon { font-size: 14px; }
+    .theme-toggle {
+      width: 40px; height: 22px;
+      background: var(--blush);
+      border-radius: 11px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: var(--rose);
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); background: var(--gold); }
+
+    /* Хедер */
+    .header { padding: 16px 24px 18px; text-align: center; }
+    .header-ornament { font-size: 10px; letter-spacing: 6px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; font-weight: 500; }
+    .header h1 { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; color: var(--soft-black); line-height: 1.1; margin-bottom: 3px; }
+    .header h1 em { font-style: italic; color: var(--rose); }
+    .header-sub { font-size: 11px; color: var(--sub-text); letter-spacing: 2px; text-transform: uppercase; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 0 24px 18px; }
+    .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--blush), transparent); }
+    .divider-ornament { color: var(--gold); font-size: 14px; }
+
+    /* Навигация */
+    .nav { display: flex; gap: 6px; padding: 0 20px; margin-bottom: 18px; }
+    .nav-btn {
+      flex: 1; padding: 9px 4px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-transform: uppercase;
+      background: var(--nav-inactive);
+      color: var(--nav-inactive-text);
+    }
+    .nav-btn.active { background: var(--rose); color: white; border-color: var(--rose); box-shadow: 0 4px 14px rgba(201,137,122,0.35); }
+
+    /* Секции */
+    .section { display: none; padding: 0 20px; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Карточки */
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); transition: background 0.3s, border 0.3s; }
+    .card-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--soft-black); margin-bottom: 14px; }
+
+    /* Календарь */
+    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .calendar-month { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: var(--soft-black); }
+    .cal-nav { width: 34px; height: 34px; border: 1px solid var(--border); background: var(--slot-bg); border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--rose); transition: all 0.2s; }
+    .cal-nav:hover { background: var(--rose); color: white; border-color: var(--rose); }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-day-name { text-align: center; font-size: 10px; font-weight: 600; color: var(--sub-text); letter-spacing: 0.3px; padding: 5px 0; text-transform: uppercase; }
+    .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; position: relative; color: var(--body-text); }
+    .cal-day.empty { cursor: default; }
+    .cal-day.past { color: var(--border); cursor: default; }
+    .cal-day.available { background: rgba(201,137,122,0.1); color: var(--rose); border: 1px solid rgba(201,137,122,0.25); }
+    .cal-day.available:hover, .cal-day.available.selected { background: var(--rose); color: white; border-color: var(--rose); box-shadow: 0 3px 10px rgba(201,137,122,0.4); transform: scale(1.08); }
+    .cal-day.unavailable { color: var(--sub-text); cursor: default; opacity: 0.4; }
+    .cal-day.available::after { content: ''; position: absolute; bottom: 2px; width: 3px; height: 3px; background: var(--gold); border-radius: 50%; }
+    .cal-day.available.selected::after { background: rgba(255,255,255,0.7); }
+
+    /* Слоты */
+    .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 12px; }
+    .slot-btn { padding: 11px 6px; border: 1.5px solid var(--slot-border); background: var(--slot-bg); border-radius: 11px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; color: var(--body-text); cursor: pointer; transition: all 0.2s; text-align: center; }
+    .slot-btn:hover, .slot-btn.selected { background: var(--rose); border-color: var(--rose); color: white; box-shadow: 0 3px 10px rgba(201,137,122,0.35); transform: translateY(-1px); }
+
+    /* Форма */
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--sub-text); margin-bottom: 5px; display: block; }
+    .form-input { width: 100%; padding: 13px 15px; border: 1.5px solid var(--slot-border); border-radius: 12px; font-family: 'Montserrat', sans-serif; font-size: 14px; color: var(--body-text); background: var(--input-bg); outline: none; transition: all 0.2s; }
+    .form-input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(201,137,122,0.1); }
+
+    /* Кнопки */
+    .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--rose), var(--deep-rose)); border: none; border-radius: 13px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 5px 20px rgba(160,94,80,0.3); margin-top: 6px; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(160,94,80,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { background: var(--blush); box-shadow: none; cursor: not-allowed; transform: none; color: var(--sub-text); }
+    .btn-back { width: 100%; margin-top: 8px; padding: 12px; border: 1.5px solid var(--border); background: transparent; border-radius: 13px; color: var(--sub-text); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-back:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* Прайс */
+    .price-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--price-border); }
+    .price-item:last-child { border-bottom: none; }
+    .price-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--soft-black); }
+    .price-name-sub { font-size: 11px; color: var(--sub-text); margin-top: 2px; }
+    .price-value { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--rose); }
+
+    /* Портфолио */
+    .portfolio-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: linear-gradient(135deg, #2AABEE, #1a8dc9); border: none; border-radius: 14px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: white; text-decoration: none; text-align: center; cursor: pointer; box-shadow: 0 5px 20px rgba(42,171,238,0.3); transition: all 0.3s; margin-top: 14px; }
+    .portfolio-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(42,171,238,0.4); }
+    .portfolio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+    .portfolio-cell { border-radius: 12px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+
+    /* Подтверждение */
+    .confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--price-border); }
+    .confirm-row:last-of-type { border-bottom: none; }
+    .confirm-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--sub-text); }
+    .confirm-value { font-size: 13px; font-weight: 600; color: var(--soft-black); }
+
+    /* Успех */
+    .success-icon { text-align: center; font-size: 52px; margin-bottom: 10px; }
+    .success-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; text-align: center; color: var(--soft-black); margin-bottom: 8px; }
+    .success-sub { text-align: center; font-size: 13px; color: var(--sub-text); line-height: 1.6; }
+
+    /* Шаги */
+    .steps { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 16px; }
+    .step-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blush); transition: all 0.3s; }
+    .step-dot.active { background: var(--rose); width: 22px; border-radius: 4px; }
+    .step-dot.done { background: var(--gold); }
+
+    /* Подписка */
+    .sub-warning { background: var(--card-bg); border: 1.5px solid var(--blush); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 14px; }
+    .sub-warning-icon { font-size: 34px; margin-bottom: 8px; }
+    .sub-warning-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--soft-black); margin-bottom: 5px; }
+    .sub-warning-text { font-size: 12px; color: var(--sub-text); line-height: 1.5; }
+    .btn-subscribe { display: block; width: 100%; padding: 14px; background: linear-gradient(135deg, #2AABEE, #1a8dc9); border: none; border-radius: 13px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: white; text-decoration: none; text-align: center; cursor: pointer; box-shadow: 0 5px 18px rgba(42,171,238,0.3); transition: all 0.3s; margin-top: 12px; }
+
+    /* Toast */
+    .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--soft-black); color: var(--cream); padding: 11px 22px; border-radius: 22px; font-size: 12px; font-weight: 500; z-index: 999; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .petal { position: fixed; pointer-events: none; animation: falling 3s ease-in forwards; z-index: 100; }
+    @keyframes falling { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Топ-панель -->
+  <div class="topbar">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('ru')">RU</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <span class="theme-icon">☀️</span>
+    <button class="theme-toggle" onclick="toggleTheme()"></button>
+    <span class="theme-icon">🌙</span>
+  </div>
+
+  <!-- Хедер -->
+  <div class="header">
+    <div class="header-ornament">✦ Nail Studio ✦</div>
+    <h1>Wex <em>Beauty</em></h1>
+    <div class="header-sub" data-i="subtitle">Запись онлайн</div>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-ornament">❀</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Навигация -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('booking',this)" data-i="nav_book">Записаться</button>
+    <button class="nav-btn" onclick="switchTab('prices',this)" data-i="nav_prices">Прайсы</button>
+    <button class="nav-btn" onclick="switchTab('portfolio',this)" data-i="nav_port">Портфолио</button>
+  </div>
+
+  <!-- ЗАПИСЬ -->
+  <div class="section active" id="section-booking">
+
+    <div id="sub-check" style="display:none">
+      <div class="sub-warning">
+        <div class="sub-warning-icon">📢</div>
+        <div class="sub-warning-title" data-i="sub_title">Требуется подписка</div>
+        <div class="sub-warning-text" data-i="sub_text">Для записи необходимо подписаться на канал</div>
+        <a class="btn-subscribe" href="https://t.me/wexbeauty" target="_blank" data-i="sub_btn">Подписаться</a>
+      </div>
+      <button class="btn-primary" onclick="checkSub()" data-i="sub_check">✓ Проверить подписку</button>
+    </div>
+
+    <!-- Шаг 1 -->
+    <div id="step-date">
+      <div class="steps"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+      <div class="card">
+        <div class="calendar-header">
+          <button class="cal-nav" onclick="prevMonth()">‹</button>
+          <div class="calendar-month" id="cal-title"></div>
+          <button class="cal-nav" onclick="nextMonth()">›</button>
+        </div>
+        <div class="calendar-grid" id="calendar"></div>
+      </div>
+      <p style="text-align:center;font-size:11px;color:var(--sub-text);margin-top:-6px" data-i="cal_hint">✅ — доступные дни</p>
+    </div>
+
+    <!-- Шаг 2 -->
+    <div id="step-time" style="display:none">
+      <div class="steps"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+      <div class="card">
+        <div class="card-title" data-i="choose_time">Выберите время</div>
+        <p style="font-size:11px;color:var(--sub-text)" id="date-label"></p>
+        <div class="slots-grid" id="slots-grid"></div>
+      </div>
+      <button class="btn-primary" id="btn-form" onclick="goToForm()" disabled data-i="btn_continue">Продолжить →</button>
+      <button class="btn-back" onclick="goBack('step-date','step-time')" data-i="btn_back">← Назад</button>
+    </div>
+
+    <!-- Шаг 3 -->
+    <div id="step-form" style="display:none">
+      <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+      <div class="card">
+        <div class="card-title" data-i="your_data">Ваши данные</div>
+        <div class="form-group">
+          <label class="form-label" data-i="lbl_name">Имя</label>
+          <input type="text" class="form-input" id="inp-name" placeholder="Ваше имя" autocomplete="name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i="lbl_phone">Телефон</label>
+          <input type="tel" class="form-input" id="inp-phone" placeholder="+7 999 123-45-67" autocomplete="tel"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="goToConfirm()" data-i="btn_continue">Продолжить →</button>
+      <button class="btn-back" onclick="goBack('step-time','step-form')" data-i="btn_back">← Назад</button>
+    </div>
+
+    <!-- Шаг 4 -->
+    <div id="step-confirm" style="display:none">
+      <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div></div>
+      <div class="card">
+        <div class="card-title" data-i="check_data">Проверьте данные</div>
+        <div class="confirm-row"><span class="confirm-label" data-i="c_date">📅 Дата</span><span class="confirm-value" id="c-date"></span></div>
+        <div class="confirm-row"><span class="confirm-label" data-i="c_time">🕐 Время</span><span class="confirm-value" id="c-time"></span></div>
+        <div class="confirm-row"><span class="confirm-label" data-i="c_name">👤 Имя</span><span class="confirm-value" id="c-name"></span></div>
+        <div class="confirm-row"><span class="confirm-label" data-i="c_phone">📱 Телефон</span><span class="confirm-value" id="c-phone"></span></div>
+      </div>
+      <button class="btn-primary" onclick="submitBooking()" data-i="btn_confirm">✓ Подтвердить запись</button>
+      <button class="btn-back" onclick="goBack('step-form','step-confirm')" data-i="btn_back">← Назад</button>
+    </div>
+
+    <!-- Успех -->
+    <div id="step-success" style="display:none">
+      <div class="card" style="text-align:center;padding:28px 18px">
+        <div class="success-icon">💅</div>
+        <div class="success-title" data-i="success_title">Запись создана!</div>
+        <div class="success-sub" id="success-text"></div>
+        <button class="btn-primary" style="margin-top:18px" onclick="reset()" data-i="btn_menu">← Главное меню</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ПРАЙСЫ -->
+  <div class="section" id="section-prices">
+    <div class="card">
+      <div class="card-title" data-i="price_title">Прайс-лист</div>
+      <p style="font-size:11px;color:var(--sub-text);margin-bottom:14px" data-i="price_sub">Актуальные цены</p>
+      <div class="price-item">
+        <div>
+          <div class="price-name" data-i="s1">Французский маникюр</div>
+          <div class="price-name-sub" data-i="s1s">Френч • гель-лак</div>
+        </div>
+        <div class="price-value">1 000 ₽</div>
+      </div>
+      <div class="price-item">
+        <div>
+          <div class="price-name" data-i="s2">Квадрат</div>
+          <div class="price-name-sub" data-i="s2s">Классическая форма</div>
+        </div>
+        <div class="price-value">500 ₽</div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--sub-text)" data-i="price_note">❀ По вопросам — пишите в бот</p>
+  </div>
+
+  <!-- ПОРТФОЛИО -->
+  <div class="section" id="section-portfolio">
+    <div class="card">
+      <div class="card-title" data-i="port_title">Мои работы</div>
+      <p style="font-size:12px;color:var(--sub-text);line-height:1.6;margin-bottom:14px" data-i="port_text">
+        Реальные работы в Telegram-канале @wexbeauty
+      </p>
+      <div class="portfolio-grid">
+        <div class="portfolio-cell" style="background:linear-gradient(135deg,#f2d4c8,#e8c0b0)">💅</div>
+        <div class="portfolio-cell" style="background:linear-gradient(135deg,#e8d5a3,#d4b87a)">✨</div>
+        <div class="portfolio-cell" style="background:linear-gradient(135deg,#d4e8d5,#a8c9ab)">🌸</div>
+        <div class="portfolio-cell" style="background:linear-gradient(135deg,#c8d4f2,#a0b0e8)">💎</div>
+      </div>
+      <a class="portfolio-btn" href="https://t.me/wexbeauty" target="_blank">
+        ✈️ <span data-i="port_btn">Открыть @wexbeauty</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ── Переводы ──────────────────────────────────────────────
+const T = {
+  ru: {
+    subtitle:"Запись онлайн", nav_book:"Записаться", nav_prices:"Прайсы", nav_port:"Портфолио",
+    sub_title:"Требуется подписка", sub_text:"Для записи подпишитесь на канал",
+    sub_btn:"Подписаться", sub_check:"✓ Проверить подписку",
+    cal_hint:"✅ — доступные дни", choose_time:"Выберите время",
+    btn_continue:"Продолжить →", btn_back:"← Назад",
+    your_data:"Ваши данные", lbl_name:"Имя", lbl_phone:"Телефон",
+    check_data:"Проверьте данные",
+    c_date:"📅 Дата", c_time:"🕐 Время", c_name:"👤 Имя", c_phone:"📱 Телефон",
+    btn_confirm:"✓ Подтвердить запись", success_title:"Запись создана!",
+    btn_menu:"← Главное меню",
+    price_title:"Прайс-лист", price_sub:"Актуальные цены",
+    s1:"Французский маникюр", s1s:"Френч • гель-лак",
+    s2:"Квадрат", s2s:"Классическая форма",
+    price_note:"❀ По вопросам — пишите в бот",
+    port_title:"Мои работы", port_text:"Реальные работы в Telegram-канале @wexbeauty",
+    port_btn:"Открыть @wexbeauty",
+    no_slots:"Нет свободных мест",
+    err_name:"Введите имя (минимум 2 символа)",
+    err_phone:"Введите корректный номер",
+    sub_ok:"✅ Подписка подтверждена!",
+    success_body:"Мы ждём вас! ✨\nНапомним за 24 часа до визита.",
+    ph_name:"Ваше имя", ph_phone:"+7 999 123-45-67",
+    months:['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+    days:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],
+    wd:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
+  },
+  en: {
+    subtitle:"Book online", nav_book:"Book", nav_prices:"Prices", nav_port:"Portfolio",
+    sub_title:"Subscription required", sub_text:"Subscribe to the channel to book",
+    sub_btn:"Subscribe", sub_check:"✓ Check subscription",
+    cal_hint:"✅ — available days", choose_time:"Choose time",
+    btn_continue:"Continue →", btn_back:"← Back",
+    your_data:"Your details", lbl_name:"Name", lbl_phone:"Phone",
+    check_data:"Confirm details",
+    c_date:"📅 Date", c_time:"🕐 Time", c_name:"👤 Name", c_phone:"📱 Phone",
+    btn_confirm:"✓ Confirm booking", success_title:"Booking confirmed!",
+    btn_menu:"← Main menu",
+    price_title:"Price list", price_sub:"Current prices",
+    s1:"French manicure", s1s:"French • gel polish",
+    s2:"Square", s2s:"Classic shape",
+    price_note:"❀ Questions? Message the bot",
+    port_title:"Portfolio", port_text:"See our real work on Telegram @wexbeauty",
+    port_btn:"Open @wexbeauty",
+    no_slots:"No slots available",
+    err_name:"Enter your name (min 2 chars)",
+    err_phone:"Enter a valid phone number",
+    sub_ok:"✅ Subscription confirmed!",
+    success_body:"We look forward to seeing you! ✨\nReminder 24h before your visit.",
+    ph_name:"Your name", ph_phone:"+7 999 123-4567",
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    days:['Mo','Tu','We','Th','Fr','Sa','Su'],
+    wd:['Su','Mo','Tu','We','Th','Fr','Sa'],
+  }
+};
+
+let lang = 'ru';
+let dark = false;
+
+// ── Тема ──────────────────────────────────────────────────
+function toggleTheme() {
+  dark = !dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+}
+if (tg && tg.colorScheme === 'dark') {
+  dark = true;
+  document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+// ── Язык ──────────────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent === l.toUpperCase())
+  );
+  applyT();
+  renderCal();
+}
+
+function applyT() {
+  const t = T[lang];
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const k = el.dataset.i;
+    if (t[k] != null) el.textContent = t[k];
+  });
+  document.getElementById('inp-name').placeholder = t.ph_name;
+  document.getElementById('inp-phone').placeholder = t.ph_phone;
+}
+
+// ── Навигация ──────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Состояние ──────────────────────────────────────────────
+const S = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  date: null,
+  time: null,
+  available: makeDates(),
+};
+
+function makeDates() {
+  const out = {};
+  const today = new Date();
+  const slots = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+  for (let i = 1; i <= 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    if (d.getDay() !== 0) {
+      const k = d.toISOString().split('T')[0];
+      out[k] = slots.filter(() => Math.random() > 0.3);
+    }
+  }
+  return out;
+}
+
+// ── Календарь ──────────────────────────────────────────────
+function renderCal() {
+  const t = T[lang];
+  document.getElementById('cal-title').textContent = `${t.months[S.month]} ${S.year}`;
+  const grid = document.getElementById('calendar');
+  grid.innerHTML = '';
+
+  t.days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const first = new Date(S.year, S.month, 1).getDay();
+  const dim = new Date(S.year, S.month + 1, 0).getDate();
+  const offset = first === 0 ? 6 : first - 1;
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let i = 0; i < offset; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= dim; d++) {
+    const el = document.createElement('div'); el.className = 'cal-day';
+    el.textContent = d;
+    const dayDate = new Date(S.year, S.month, d);
+    const ds = `${S.year}-${String(S.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (dayDate < today) {
+      el.classList.add('past');
+    } else if (S.available[ds]?.length > 0) {
+      el.classList.add('available');
+      if (S.date === ds) el.classList.add('selected');
+      el.onclick = () => pickDate(ds, el);
+    } else {
+      el.classList.add('unavailable');
+    }
+    grid.appendChild(el);
+  }
+}
+
+function prevMonth() {
+  const now = new Date();
+  if (S.year === now.getFullYear() && S.month <= now.getMonth()) return;
+  S.month--; if (S.month < 0) { S.month = 11; S.year--; }
+  renderCal();
+}
+function nextMonth() {
+  S.month++; if (S.month > 11) { S.month = 0; S.year++; }
+  renderCal();
+}
+
+function pickDate(ds, el) {
+  S.date = ds; S.time = null;
+  document.querySelectorAll('.cal-day.available').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  setTimeout(() => showTimeStep(ds), 180);
+}
+
+// ── Шаг 2: Время ──────────────────────────────────────────
+function showTimeStep(ds) {
+  show('step-time'); hide('step-date');
+  const t = T[lang];
+  const [y,m,d] = ds.split('-');
+  const dt = new Date(+y, +m-1, +d);
+  document.getElementById('date-label').textContent =
+    `${t.wd[dt.getDay()]}, ${d} ${t.months[+m-1]}`;
+
+  const grid = document.getElementById('slots-grid');
+  grid.innerHTML = '';
+  S.time = null;
+  document.getElementById('btn-form').disabled = true;
+
+  const slots = S.available[ds] || [];
+  if (!slots.length) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'grid-column:span 3;text-align:center;color:var(--sub-text);padding:18px;font-size:13px';
+    msg.textContent = t.no_slots;
+    grid.appendChild(msg);
+    return;
+  }
+  slots.forEach(tm => {
+    const btn = document.createElement('button');
+    btn.className = 'slot-btn';
+    btn.textContent = tm;
+    btn.onclick = () => {
+      S.time = tm;
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('btn-form').disabled = false;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function goToForm() {
+  if (!S.time) return;
+  hide('step-time'); show('step-form');
+}
+
+// ── Шаг 3: Данные ─────────────────────────────────────────
+function goToConfirm() {
+  const t = T[lang];
+  const name = document.getElementById('inp-name').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  if (name.length < 2) { toast(t.err_name); return; }
+  if (!phone.match(/^[\+]?[\d\s\-\(\)]{10,16}$/)) { toast(t.err_phone); return; }
+
+  const [y,m,d] = S.date.split('-');
+  const dt = new Date(+y, +m-1, +d);
+  document.getElementById('c-date').textContent = `${t.wd[dt.getDay()]}, ${d} ${t.months[+m-1]} ${y}`;
+  document.getElementById('c-time').textContent = S.time;
+  document.getElementById('c-name').textContent = name;
+  document.getElementById('c-phone').textContent = phone;
+
+  hide('step-form'); show('step-confirm');
+}
+
+// ── Шаг 4: Подтверждение ──────────────────────────────────
+function submitBooking() {
+  const t = T[lang];
+  const name = document.getElementById('inp-name').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  if (tg) tg.sendData(JSON.stringify({ action:'book', date:S.date, time:S.time, name, phone }));
+
+  hide('step-confirm'); show('step-success');
+  const [,m,d] = S.date.split('-');
+  document.getElementById('success-text').innerHTML =
+    `📅 <strong>${d} ${T[lang].months[+m-1]}</strong> в <strong>${S.time}</strong><br><br>${t.success_body}`;
+  for (let i = 0; i < 14; i++) setTimeout(petal, i * 110);
+}
+
+function petal() {
+  const emojis = ['🌸','🌺','💮','🌼'];
+  const el = document.createElement('div');
+  el.className = 'petal';
+  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  el.style.left = Math.random() * 100 + 'vw';
+  el.style.animationDuration = (2 + Math.random() * 2) + 's';
+  el.style.fontSize = (14 + Math.random() * 12) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function reset() {
+  S.date = null; S.time = null;
+  hide('step-success'); show('step-date');
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-phone').value = '';
+  renderCal();
+}
+
+function goBack(showId, hideId) {
+  hide(hideId); show(showId);
+  if (showId === 'step-date') renderCal();
+}
+
+function checkSub() {
+  if (tg) tg.sendData(JSON.stringify({ action: 'check_subscription' }));
+  hide('sub-check'); show('step-date');
+  toast(T[lang].sub_ok);
+}
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── Инициализация ─────────────────────────────────────────
+applyT();
+renderCal();
+</script>
+</body>
+</html>
