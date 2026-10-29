@@ -1,12 +1,14 @@
 import os
 
-# Токен берётся из переменной окружения Railway (или напрямую для локального запуска)
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8408390967:AAERpuaN2by1V6PunW-w0xdQCWnQsVdAxUI")
+# Токен берётся только из переменной окружения (Railway → Variables, локально — export BOT_TOKEN=...)
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise RuntimeError("BOT_TOKEN не задан: добавь его в переменные окружения")
 
-ADMIN_ID = 5842837744
-CHANNEL_ID = -1003853097806
-CHANNEL_LINK = "https://t.me/wexbeauty"
-SCHEDULE_CHANNEL_ID = -1003853097806
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "5842837744"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003853097806"))
+CHANNEL_LINK = os.environ.get("CHANNEL_LINK", "https://t.me/wexbeauty")
+SCHEDULE_CHANNEL_ID = int(os.environ.get("SCHEDULE_CHANNEL_ID", "-1003853097806"))
 
 DEFAULT_TIME_SLOTS = [
     "09:00", "10:00", "11:00", "12:00",

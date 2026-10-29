@@ -7,9 +7,9 @@
 ## 📁 Структура проекта
 
 ```
-manicure_bot/
+wexbeautybot/
 ├── bot.py                    # Точка входа — запуск бота
-├── config.py                 # ⚙️ НАСТРОЙКИ (заполнить перед запуском!)
+├── config.py                 # ⚙️ Настройки (читаются из переменных окружения)
 ├── requirements.txt          # Зависимости
 │
 ├── database/
@@ -40,15 +40,18 @@ manicure_bot/
 
 ---
 
-## ⚙️ Что нужно заполнить в config.py
+## ⚙️ Настройки (переменные окружения)
 
-```python
-BOT_TOKEN = "7123456789:AAF..."          # Токен от @BotFather
-ADMIN_ID = 123456789                      # Ваш Telegram ID (от @userinfobot)
-CHANNEL_ID = -1001234567890               # ID канала (для проверки подписки)
-CHANNEL_LINK = "https://t.me/mychannel"  # Ссылка на канал
-SCHEDULE_CHANNEL_ID = -1001234567890      # Канал для публикации расписания
-```
+Все настройки задаются переменными окружения — токен никогда не хранится в коде.
+
+| Переменная | Обязательна | Что это |
+|---|---|---|
+| `BOT_TOKEN` | да | Токен от @BotFather |
+| `ADMIN_ID` | нет | Ваш Telegram ID (от @userinfobot) |
+| `CHANNEL_ID` | нет | ID канала для проверки подписки |
+| `CHANNEL_LINK` | нет | Ссылка на канал |
+| `SCHEDULE_CHANNEL_ID` | нет | Канал для публикации расписания |
+| `DB_PATH` | нет | Путь к базе SQLite (по умолчанию `manicure.db`) |
 
 ### Как получить данные:
 - **BOT_TOKEN** — создайте бота через @BotFather → /newbot
@@ -60,9 +63,10 @@ SCHEDULE_CHANNEL_ID = -1001234567890      # Канал для публикаци
 
 ## 🚀 Установка и запуск
 
-### 1. Клонируйте/скачайте проект
+### 1. Клонируйте проект
 ```bash
-cd manicure_bot
+git clone https://github.com/wexwxee/wexbeautybot.git
+cd wexbeautybot
 ```
 
 ### 2. Создайте виртуальное окружение (рекомендуется)
@@ -78,8 +82,10 @@ venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Заполните config.py
-Откройте `config.py` и замените все значения на свои.
+### 4. Задайте токен
+```bash
+export BOT_TOKEN="ваш_токен"   # Windows: set BOT_TOKEN=ваш_токен
+```
 
 ### 5. Запустите бота
 ```bash
